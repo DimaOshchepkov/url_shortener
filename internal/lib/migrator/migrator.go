@@ -2,6 +2,7 @@ package migrator
 
 import (
 	"fmt"
+
 	"github.com/DimaOshchepkov/url_shortener/internal/config"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -11,7 +12,7 @@ import (
 )
 
 func Migrate(cfg *config.Config) error {
-	m, err := migrate.New("file://"+cfg.Storage.Migrations_path,
+	m, err := migrate.New("file://"+cfg.Storage.MigrationsPath,
 		fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Storage.User, cfg.Storage.Password, cfg.Storage.Host, cfg.Storage.Port, cfg.Storage.Dbname))
 	if err != nil {
 		return err

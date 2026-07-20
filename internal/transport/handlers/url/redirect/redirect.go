@@ -1,3 +1,4 @@
+// Package redirect provides HTTP handler for redirecting shortened URLs.
 package redirect
 
 import (
@@ -6,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"log/slog"
+	"net/http"
+
 	resp "github.com/DimaOshchepkov/url_shortener/internal/lib/api/response"
 	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
 	"github.com/DimaOshchepkov/url_shortener/internal/lib/metrics"
 	"github.com/DimaOshchepkov/url_shortener/internal/storage"
-	"log/slog"
-	"net/http"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"

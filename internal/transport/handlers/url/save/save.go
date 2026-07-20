@@ -1,15 +1,17 @@
+// Package save provides HTTP handler for creating shortened URLs.
 package save
 
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"net/http"
+
 	resp "github.com/DimaOshchepkov/url_shortener/internal/lib/api/response"
 	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
 	"github.com/DimaOshchepkov/url_shortener/internal/lib/random"
 	"github.com/DimaOshchepkov/url_shortener/internal/storage"
 	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
-	"log/slog"
-	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
@@ -78,7 +80,8 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
 		// validate url
 		if err := validator.New().Struct(req); err != nil {
-			validateErr := err.(validator.ValidationErrors)
+			var validateErr validator.ValidationErrors
+			errors.As(err, &validateErr)
 			log.Error("invalid request", sl.Err(err))
 			render.JSON(w, r, resp.ValidationError(validateErr))
 			return

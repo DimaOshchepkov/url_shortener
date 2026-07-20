@@ -21,10 +21,9 @@ var testLogger = slogdiscard.NewDiscardLogger()
 
 // stubURLSaver implements URLSaver for testing.
 type stubURLSaver struct {
-	saveErr        error
-	savedURL       string
-	savedAlias     string
-	savedAliasUser string // alias provided by user in request
+	saveErr    error
+	savedURL   string
+	savedAlias string
 }
 
 func (s *stubURLSaver) SaveURL(_ context.Context, urlToSave string, alias string) error {

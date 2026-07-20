@@ -20,14 +20,14 @@ type Config struct {
 }
 
 type Storage struct {
-	Host            string `yaml:"host" env-required:"true" env:"STORAGE_HOST"`
-	Port            string `yaml:"port" env-required:"true" env:"STORAGE_PORT"`
-	Dbname          string `yaml:"dbname" env-required:"true" env:"POSTGRES_DB"`
-	User            string `yaml:"user" env-required:"true" env:"POSTGRES_USER"`
-	Password        string `yaml:"password" env-required:"true" env:"POSTGRES_PASSWORD"`
-	Migrations_path string `yaml:"migrations_path" env-required:"true"`
-	PoolMaxConns    int32  `yaml:"pool_max_conns" env:"POOL_MAX_CONNS" env-default:"20"`
-	PoolMinConns    int32  `yaml:"pool_min_conns" env:"POOL_MIN_CONNS" env-default:"5"`
+	Host           string `yaml:"host" env-required:"true" env:"STORAGE_HOST"`
+	Port           string `yaml:"port" env-required:"true" env:"STORAGE_PORT"`
+	Dbname         string `yaml:"dbname" env-required:"true" env:"POSTGRES_DB"`
+	User           string `yaml:"user" env-required:"true" env:"POSTGRES_USER"`
+	Password       string `yaml:"password" env-required:"true" env:"POSTGRES_PASSWORD"`
+	MigrationsPath string `yaml:"migrations_path" env-required:"true"`
+	PoolMaxConns   int32  `yaml:"pool_max_conns" env:"POOL_MAX_CONNS" env-default:"20"`
+	PoolMinConns   int32  `yaml:"pool_min_conns" env:"POOL_MIN_CONNS" env-default:"5"`
 }
 
 type HTTPServer struct {
@@ -59,7 +59,7 @@ type ClickBatch struct {
 	Interval time.Duration `yaml:"interval" env:"CLICK_BATCH_INTERVAL" env-default:"10s"`
 }
 
-// Must - обозначает, что функция либо выполнится, либо вызовет панику
+// MustLoad loads config or panics.
 func MustLoad() *Config {
 	// loads environment variables from the .env file
 	if err := godotenv.Load("config.env"); err != nil {

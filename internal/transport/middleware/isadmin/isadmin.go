@@ -2,10 +2,11 @@ package isadmin
 
 import (
 	"context"
-	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
-	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 	"log/slog"
 	"net/http"
+
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 )
 
 type PermissionProvider interface {

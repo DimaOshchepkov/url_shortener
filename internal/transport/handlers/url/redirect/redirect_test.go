@@ -67,7 +67,7 @@ func TestRedirect_Success(t *testing.T) {
 
 	resp, err := client.Do(req)
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	assert.Equal(t, http.StatusFound, resp.StatusCode)
 	assert.Equal(t, "https://example.com/page", resp.Header.Get("Location"))
@@ -83,7 +83,7 @@ func TestRedirect_NotFound(t *testing.T) {
 
 	resp, err := http.Get(ts.URL + "/nonexistent")
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode) // JSON response still 200
 	body := readBody(resp)
@@ -99,7 +99,7 @@ func TestRedirect_EmptyAlias(t *testing.T) {
 	// Request without alias path param — chi returns 404 for no matching route.
 	resp, err := http.Get(ts.URL + "/")
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// chi returns 404 when no route matches; that's fine — the handler isn't reached.
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
@@ -114,7 +114,7 @@ func TestRedirect_InternalError(t *testing.T) {
 
 	resp, err := http.Get(ts.URL + "/abc123")
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body := readBody(resp)
 	assert.Contains(t, body, `"status":"Error"`)
@@ -134,7 +134,7 @@ func TestRedirect_InvalidURLScheme(t *testing.T) {
 
 	resp, err := client.Do(req)
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Should return JSON error, not redirect.
 	body := readBody(resp)

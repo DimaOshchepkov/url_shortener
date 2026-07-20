@@ -17,7 +17,6 @@ var (
 )
 
 var (
-	ErrInvalidToken       = errors.New("invalid token")
 	ErrFailedIsAdminCheck = errors.New("failed to check if user is admin")
 )
 

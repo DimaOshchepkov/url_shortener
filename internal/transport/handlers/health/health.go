@@ -1,3 +1,4 @@
+// Package health provides health check HTTP handler.
 package health
 
 import (
@@ -19,7 +20,7 @@ type CacheInfo interface {
 // @Produce		json
 // @Success		200	{object}	map[string]any
 // @Router			/health [get]
-func New(log *slog.Logger, cache CacheInfo) http.HandlerFunc {
+func New(_ *slog.Logger, cache CacheInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, map[string]any{
 			"status":   "ok",

@@ -144,13 +144,13 @@ func RunServer(ctx context.Context, log *slog.Logger, cfg *config.Config) error 
 	srv := &http.Server{
 		Addr:              cfg.Address,
 		Handler:           router,
-		ReadTimeout:       cfg.HTTPServer.Timeout,
-		WriteTimeout:      cfg.HTTPServer.Timeout,
-		IdleTimeout:       cfg.HTTPServer.IdleTimeout,
-		ReadHeaderTimeout: cfg.HTTPServer.ReadHeaderTimeout,
+		ReadTimeout:       cfg.Timeout,
+		WriteTimeout:      cfg.Timeout,
+		IdleTimeout:       cfg.IdleTimeout,
+		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error("failed to start server")
 			os.Exit(1)
 		}

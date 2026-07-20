@@ -43,7 +43,7 @@ func (b *ClickBatcher) GetURL(ctx context.Context, alias string) (string, error)
 
 // IncrementClicks records a click in the in-memory buffer.
 // The actual database write happens on the next flush.
-func (b *ClickBatcher) IncrementClicks(ctx context.Context, alias string) error {
+func (b *ClickBatcher) IncrementClicks(_ context.Context, alias string) error {
 	b.mu.Lock()
 	b.pending[alias]++
 	b.mu.Unlock()

@@ -84,7 +84,7 @@ func TestClickBatcher_FlushAggregates(t *testing.T) {
 	ctx := context.Background()
 
 	// Multiple increments on the same alias.
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		err := b.IncrementClicks(ctx, "abc")
 		require.NoError(t, err)
 	}
@@ -99,9 +99,9 @@ func TestClickBatcher_MultipleAliases(t *testing.T) {
 	b := New(inner, testLogger, time.Second)
 	ctx := context.Background()
 
-	b.IncrementClicks(ctx, "abc")
-	b.IncrementClicks(ctx, "abc")
-	b.IncrementClicks(ctx, "xyz")
+	_ = b.IncrementClicks(ctx, "abc")
+	_ = b.IncrementClicks(ctx, "abc")
+	_ = b.IncrementClicks(ctx, "xyz")
 
 	b.flush(ctx)
 
@@ -133,7 +133,7 @@ func TestClickBatcher_GracefulShutdownFlushes(t *testing.T) {
 	}()
 
 	// Buffer some clicks.
-	b.IncrementClicks(ctx, "abc")
+	_ = b.IncrementClicks(ctx, "abc")
 
 	// Cancel immediately — should trigger final flush.
 	cancel()
@@ -154,7 +154,7 @@ func TestClickBatcher_RequeueOnFailure(t *testing.T) {
 	b := New(inner, testLogger, time.Second)
 	ctx := context.Background()
 
-	b.IncrementClicks(ctx, "abc")
+	_ = b.IncrementClicks(ctx, "abc")
 
 	// First flush fails — clicks should be re-queued.
 	b.flush(ctx)
@@ -174,7 +174,7 @@ func TestClickBatcher_RunPeriodicFlush(t *testing.T) {
 
 	go b.Run(ctx)
 
-	b.IncrementClicks(ctx, "abc")
+	_ = b.IncrementClicks(ctx, "abc")
 
 	// Wait for a periodic flush.
 	time.Sleep(50 * time.Millisecond)

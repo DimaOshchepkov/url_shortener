@@ -3,11 +3,12 @@ package auth
 import (
 	"context"
 	"fmt"
-	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
-	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -23,7 +24,7 @@ func New(log *slog.Logger, appSecret string) func(next http.Handler) http.Handle
 				return
 			}
 
-			tokenParsed, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+			tokenParsed, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
 				if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 				}

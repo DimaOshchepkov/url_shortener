@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/DimaOshchepkov/url_shortener/internal/app"
-	"github.com/DimaOshchepkov/url_shortener/internal/config"
-	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/handlers/slogpretty"
-	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/DimaOshchepkov/url_shortener/internal/app"
+	"github.com/DimaOshchepkov/url_shortener/internal/config"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/handlers/slogpretty"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
 )
 
 //	@title			URL Shortener API
