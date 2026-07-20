@@ -3,24 +3,28 @@ package save
 import (
 	"context"
 	"errors"
-	resp "github.com/neepooha/url_shortener/internal/lib/api/response"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
 	"log/slog"
 	"net/http"
 	"strings"
 
+	resp "github.com/DimaOshchepkov/url_shortener/internal/lib/api/response"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type Request struct {
 	Email string `json:"email" validate:"required"`
-	AppID int    `json:"app_id" validate:"requied"`
+	AppID int    `json:"app_id" validate:"required"`
 }
 
 type Response struct {
-	resp.Response
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
 }
 
 type PermissionSetter interface {
@@ -49,6 +53,16 @@ func exractToken(header http.Header) (string, error) {
 	return auth, nil
 }
 
+// New @Summary		Назначить администратора
+// @Description	Выдаёт права администратора пользователю по email. Токен SSO передаётся в заголовке Authorization.
+// @Tags			admin
+// @Accept			json
+// @Produce		json
+// @Param			Authorization	header		string	true	"Bearer JWT-токен от SSO"
+// @Param			request			body		Request	true	"Email пользователя и ID приложения"
+// @Success		200				{object}	Response
+// @Failure		400				{object}	map[string]string
+// @Router			/user [post]
 func New(log *slog.Logger, permProvider PermissionSetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.admins.set.New"
@@ -79,8 +93,7 @@ func New(log *slog.Logger, permProvider PermissionSetter) http.HandlerFunc {
 
 		_, err = permProvider.SetAdmin(ctx, req.Email, req.AppID)
 		if err != nil {
-			errExpect := "grpc.SetAdmin: rpc error: code = InvalidArgument desc = invalid credentials"
-			if err.Error() == errExpect {
+			if st, ok := status.FromError(err); ok && st.Code() == codes.InvalidArgument {
 				log.Error("Invalid credential", sl.Err(err))
 				render.JSON(w, r, resp.Error("Invalid credential"))
 				return
@@ -92,6 +105,6 @@ func New(log *slog.Logger, permProvider PermissionSetter) http.HandlerFunc {
 		log.Info("user set to admin")
 
 		// response OK
-		render.JSON(w, r, Response{Response: resp.OK()})
+		render.JSON(w, r, Response{Status: "OK"})
 	}
 }

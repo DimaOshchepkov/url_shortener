@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG GO_VERSION=1.22.1
+ARG GO_VERSION=1.25.0
 FROM golang:${GO_VERSION}-alpine AS base
 WORKDIR /apps/url-shortener
 

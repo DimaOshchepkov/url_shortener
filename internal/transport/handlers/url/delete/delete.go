@@ -3,10 +3,10 @@ package delete
 import (
 	"context"
 	"errors"
-	resp "github.com/neepooha/url_shortener/internal/lib/api/response"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
-	"github.com/neepooha/url_shortener/internal/storage"
-	get "github.com/neepooha/url_shortener/internal/transport/middleware/context"
+	resp "github.com/DimaOshchepkov/url_shortener/internal/lib/api/response"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+	"github.com/DimaOshchepkov/url_shortener/internal/storage"
+	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 	"log/slog"
 	"net/http"
 
@@ -20,6 +20,17 @@ type URLDeleter interface {
 	DeleteURL(ctx context.Context, alias string) error
 }
 
+// @Summary		Удалить короткую ссылку
+// @Description	Удаляет alias из базы. Требует права администратора.
+// @Tags			urls
+// @Produce		json
+// @Param			alias	path	string	true	"Короткий alias"
+// @Success		200		{object}	response.Response
+// @Failure		401		{object}	response.Response
+// @Failure		403		{object}	response.Response
+// @Failure		404		{object}	response.Response
+// @Security		BearerAuth
+// @Router			/url/{alias} [delete]
 func New(log *slog.Logger, urlDeleter URLDeleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.url.delete.New"

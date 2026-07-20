@@ -1,0 +1,37 @@
+# Базовый конфиг с локальными значениями по умолчанию.
+# Для Docker/dev или prod переопределите нужные поля через config.env:
+#   ENV=dev
+#   STORAGE_HOST=urldb
+#   STORAGE_PORT=5432
+#   HTTP_SERVER_ADDRESS=0.0.0.0:8080
+#   SSO_ADDRESS=sso:44044
+# Все поля с env-тегами в config.go можно переопределить через переменные окружения.
+env: "local" # переопределяется через ENV (local/dev/prod)
+storage:
+  host: "localhost"
+  port: 5431
+  dbname: "url"
+  user: "myuser"
+  password: "mypass"
+  migrations_path: "./migrations"
+  pool_max_conns: 20
+  pool_min_conns: 5
+http_server:
+  address: "localhost:8080"
+  timeout: 4s # Время на чтение и отправку запроса
+  idle_timeout: 60s # Время жизни соединения с клиентом
+  read_header_timeout: 2s # Защита от slow-loris: таймаут чтения заголовков
+  user: "myuser"
+  password: "mypass"
+clients:  
+  sso:
+    address: "localhost:44044"
+    timeout: 15s
+    retriesCount: 5
+app_secret: "test-secret"
+cache:
+  enabled: true
+  max_size: 10000
+  ttl: 5m
+click_batch:
+  interval: 10s

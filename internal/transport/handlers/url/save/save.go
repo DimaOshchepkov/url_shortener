@@ -3,11 +3,11 @@ package save
 import (
 	"context"
 	"errors"
-	resp "github.com/neepooha/url_shortener/internal/lib/api/response"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
-	"github.com/neepooha/url_shortener/internal/lib/random"
-	"github.com/neepooha/url_shortener/internal/storage"
-	get "github.com/neepooha/url_shortener/internal/transport/middleware/context"
+	resp "github.com/DimaOshchepkov/url_shortener/internal/lib/api/response"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/random"
+	"github.com/DimaOshchepkov/url_shortener/internal/storage"
+	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 	"log/slog"
 	"net/http"
 
@@ -22,8 +22,9 @@ type Request struct {
 }
 
 type Response struct {
-	resp.Response
-	Alias string `json:"alias,omitempty"`
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+	Alias  string `json:"alias,omitempty"`
 }
 
 //go:generate go run github.com/vektra/mockery/v2@v2.42.2 --name=URLSaver
@@ -33,6 +34,17 @@ type URLSaver interface {
 
 const aliasLength = 6
 
+// @Summary		Создать короткую ссылку
+// @Description	Создаёт короткий alias для переданного URL. Если alias не указан, генерируется случайный.
+// @Tags			urls
+// @Accept			json
+// @Produce		json
+// @Param			request	body		Request	true	"URL для сокращения"
+// @Success		200		{object}	Response
+// @Failure		400		{object}	response.Response
+// @Failure		401		{object}	response.Response
+// @Security		BearerAuth
+// @Router			/url [post]
 func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.url.save.New"
@@ -88,7 +100,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 				return
 			}
 			log.Error("failed to add url", sl.Err(err))
-			render.JSON(w, r, resp.Error("url already exists"))
+			render.JSON(w, r, resp.Error("internal error"))
 			return
 		}
 		log.Info("url added")
@@ -100,7 +112,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
 func responseOK(w http.ResponseWriter, r *http.Request, alias string) {
 	render.JSON(w, r, Response{
-		Response: resp.OK(),
-		Alias:    alias,
+		Status: "OK",
+		Alias:  alias,
 	})
 }

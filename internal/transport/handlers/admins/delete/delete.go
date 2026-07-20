@@ -3,15 +3,18 @@ package delete
 import (
 	"context"
 	"errors"
-	resp "github.com/neepooha/url_shortener/internal/lib/api/response"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
 	"log/slog"
 	"net/http"
 	"strings"
 
+	resp "github.com/DimaOshchepkov/url_shortener/internal/lib/api/response"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type Request struct {
@@ -20,7 +23,8 @@ type Request struct {
 }
 
 type Response struct {
-	resp.Response
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
 }
 
 type PermissionDeleter interface {
@@ -49,6 +53,16 @@ func exractToken(header http.Header) (string, error) {
 	return auth, nil
 }
 
+// New @Summary		Отозвать права администратора
+// @Description	Отзывает права администратора у пользователя по email. Токен SSO передаётся в заголовке Authorization.
+// @Tags			admin
+// @Accept			json
+// @Produce		json
+// @Param			Authorization	header		string	true	"Bearer JWT-токен от SSO"
+// @Param			request			body		Request	true	"Email пользователя и ID приложения"
+// @Success		200				{object}	Response
+// @Failure		400				{object}	map[string]string
+// @Router			/user [delete]
 func New(log *slog.Logger, permProvider PermissionDeleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.url.delete.New"
@@ -79,8 +93,7 @@ func New(log *slog.Logger, permProvider PermissionDeleter) http.HandlerFunc {
 
 		_, err = permProvider.DelAdmin(ctx, req.Email, req.AppID)
 		if err != nil {
-			errExpect := "grpc.DelAdmin: rpc error: code = InvalidArgument desc = invalid credentials"
-			if err.Error() == errExpect {
+			if st, ok := status.FromError(err); ok && st.Code() == codes.InvalidArgument {
 				log.Error("Invalid credential", sl.Err(err))
 				render.JSON(w, r, resp.Error("Invalid credential"))
 				return
@@ -92,6 +105,6 @@ func New(log *slog.Logger, permProvider PermissionDeleter) http.HandlerFunc {
 		log.Info("admin delete")
 
 		// response OK
-		render.JSON(w, r, Response{Response: resp.OK()})
+		render.JSON(w, r, Response{Status: "OK"})
 	}
 }

@@ -2,8 +2,8 @@ package isadmin
 
 import (
 	"context"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
-	get "github.com/neepooha/url_shortener/internal/transport/middleware/context"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 	"log/slog"
 	"net/http"
 )
@@ -33,7 +33,7 @@ func New(log *slog.Logger, permProvider PermissionProvider) func(next http.Handl
 				return
 			}
 
-			isAdmin, err := permProvider.IsAdmin(r.Context(), uid, appID)
+			isAdmin, err := permProvider.IsAdmin(r.Context(), uid, int(appID))
 			if err != nil {
 				log.Error("failed to check if user is admin", sl.Err(err))
 				ctx := context.WithValue(r.Context(), get.ErrKey, get.ErrFailedIsAdminCheck)

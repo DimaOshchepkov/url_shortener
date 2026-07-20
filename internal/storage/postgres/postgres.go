@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/neepooha/url_shortener/internal/config"
-	"github.com/neepooha/url_shortener/internal/storage"
+	"github.com/DimaOshchepkov/url_shortener/internal/config"
+	"github.com/DimaOshchepkov/url_shortener/internal/storage"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -22,7 +23,14 @@ func NewStorage(cfg *config.Config) (*Storage, error) {
 		"password=%s dbname=%s sslmode=disable",
 		cfg.Storage.Host, cfg.Storage.Port, cfg.Storage.User, cfg.Storage.Password, cfg.Storage.Dbname)
 
-	db, err := pgxpool.New(context.Background(), psqlInfo)
+	poolCfg, err := pgxpool.ParseConfig(psqlInfo)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	poolCfg.MaxConns = cfg.Storage.PoolMaxConns
+	poolCfg.MinConns = cfg.Storage.PoolMinConns
+
+	db, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -63,6 +71,25 @@ func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
 	return resURL, nil
 }
 
+// IncrementClicks atomically increments the click counter for the given alias.
+// This is called after a successful redirect to track per-link analytics.
+func (s *Storage) IncrementClicks(ctx context.Context, alias string) error {
+	return s.IncrementClicksBy(ctx, alias, 1)
+}
+
+// IncrementClicksBy atomically increments the click counter by the given delta.
+// Used by ClickBatcher to flush batched counts.
+func (s *Storage) IncrementClicksBy(ctx context.Context, alias string, delta int64) error {
+	const op = "storage.postgres.IncrementClicksBy"
+
+	stmt := `UPDATE urls SET clicks = clicks + $2 WHERE alias = $1`
+	_, err := s.db.Exec(ctx, stmt, alias, delta)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
 func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
 	const op = "storage.postgres.DeleteURL"
 
@@ -87,5 +114,5 @@ func IsDuplicatedKeyError(err error) bool {
 }
 
 func IsNotFoundError(err error) bool {
-	return err.Error() == "no rows in result set"
+	return errors.Is(err, pgx.ErrNoRows)
 }

@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   url-shortener:
-    depends_on: 
+    depends_on:
       urldb:
         condition: service_healthy
         restart: true
@@ -10,11 +8,14 @@ services:
       context: .
     image: url-shortener
     container_name: url-shortener
+    env_file:
+      - ./config.env
     networks:
       - urlnet
       - auth-network
     ports:
       - 8080:8080
+      - 6060:6060
     deploy:
       restart_policy:
         condition: on-failure
@@ -26,6 +27,8 @@ services:
       - ./config.env
     networks:
       - urlnet
+    ports:
+      - "5432:5432"
     volumes:
       - postgresql_urldb:/var/lib/postgresql/urldb
     healthcheck:
@@ -34,8 +37,40 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - urlnet
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./config.env
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    networks:
+      - urlnet
+
 volumes:
   postgresql_urldb:
+  prometheus_data:
+  grafana_data:
 
 networks:
   urlnet:

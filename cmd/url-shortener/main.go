@@ -2,15 +2,27 @@ package main
 
 import (
 	"context"
-	"github.com/neepooha/url_shortener/internal/app"
-	"github.com/neepooha/url_shortener/internal/config"
-	"github.com/neepooha/url_shortener/internal/lib/logger/handlers/slogpretty"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
+	"github.com/DimaOshchepkov/url_shortener/internal/app"
+	"github.com/DimaOshchepkov/url_shortener/internal/config"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/handlers/slogpretty"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 )
+
+//	@title			URL Shortener API
+//	@version		1.0
+//	@description	REST API сервиса сокращения ссылок с JWT-аутентификацией.
+//
+//	@host		localhost:8080
+//	@BasePath	/
+
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				JWT токен в формате "Bearer &lt;token&gt;". Получить токен через SSO-сервис.
 
 const (
 	envLocal = "local"
@@ -19,10 +31,8 @@ const (
 )
 
 func main() {
-	// init config
 	cfg := config.MustLoad()
 
-	// init logger
 	log := setupLogger(cfg.Env)
 	log.Info("starting url shortener", slog.String("env", cfg.Env))
 	log.Debug("creddentials url-shortener", slog.String("address", cfg.Address))
@@ -38,19 +48,16 @@ func main() {
 }
 
 func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
 	switch env {
 	case envLocal:
-		log = setupPrettySlog()
+		return setupPrettySlog()
 	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+		return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	default:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+		return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	}
-	return log
 }
 
 func setupPrettySlog() *slog.Logger {
@@ -59,8 +66,6 @@ func setupPrettySlog() *slog.Logger {
 			Level: slog.LevelDebug,
 		},
 	}
-
 	handler := opts.NewPrettyHandler(os.Stdout)
-
 	return slog.New(handler)
 }

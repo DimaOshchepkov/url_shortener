@@ -2,8 +2,9 @@ package auth
 
 import (
 	"context"
-	"github.com/neepooha/url_shortener/internal/lib/logger/sl"
-	get "github.com/neepooha/url_shortener/internal/transport/middleware/context"
+	"fmt"
+	"github.com/DimaOshchepkov/url_shortener/internal/lib/logger/sl"
+	get "github.com/DimaOshchepkov/url_shortener/internal/transport/middleware/context"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -17,24 +18,47 @@ func New(log *slog.Logger, appSecret string) func(next http.Handler) http.Handle
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr := extractBearerToken(r)
-			log.Debug("got JWT token", slog.String("jwt-token", tokenStr))
 			if tokenStr == "" {
-				next.ServeHTTP(w, r)
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
 				return
 			}
 
-			tokenParsed, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) { return []byte(appSecret), nil })
+			tokenParsed, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+				if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+				}
+				return []byte(appSecret), nil
+			})
 			if err != nil {
 				log.Warn("failed to parse token", sl.Err(err))
-				ctx := context.WithValue(r.Context(), get.ErrKey, get.ErrInvalidToken)
-				next.ServeHTTP(w, r.WithContext(ctx))
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
 				return
 			}
 
-			claims := tokenParsed.Claims.(jwt.MapClaims)
-			log.Info("user authorized", slog.Any("claims", claims))
-			ctx := context.WithValue(r.Context(), get.UidKey, uint64(claims["uid"].(float64)))
-			ctx = context.WithValue(ctx, get.AppIDKey, uint64(claims["app_id"].(float64)))
+			claims, ok := tokenParsed.Claims.(jwt.MapClaims)
+			if !ok {
+				log.Warn("invalid token claims")
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			uid, ok := claims["uid"].(float64)
+			if !ok {
+				log.Warn("invalid uid in token")
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			appID, ok := claims["app_id"].(float64)
+			if !ok {
+				log.Warn("invalid app_id in token")
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			log.Info("user authorized", slog.Any("uid", uid), slog.Any("app_id", appID))
+			ctx := context.WithValue(r.Context(), get.UidKey, uint64(uid))
+			ctx = context.WithValue(ctx, get.AppIDKey, uint64(appID))
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

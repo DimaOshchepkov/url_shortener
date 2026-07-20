@@ -27,6 +27,12 @@ tasks:
     desc: "run docker postgres"
     cmds:
       - docker run --name url-pos -e POSTGRES_DB=url -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypass -p 5431:5432 -d postgres
+  swagger:
+    aliases:
+      - swag
+    desc: "generate swagger docs"
+    cmds:
+      - swag init -g cmd/url-shortener/main.go -o docs/
 
 
       # See: https://taskfile.dev/api/

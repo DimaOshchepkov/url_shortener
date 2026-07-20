@@ -1,0 +1,231 @@
+definitions:
+  delete.Request:
+    properties:
+      app_id:
+        type: integer
+      email:
+        type: string
+    required:
+    - app_id
+    - email
+    type: object
+  delete.Response:
+    properties:
+      error:
+        type: string
+      status:
+        type: string
+    type: object
+  internal_transport_handlers_admins_set.Request:
+    properties:
+      app_id:
+        type: integer
+      email:
+        type: string
+    required:
+    - app_id
+    - email
+    type: object
+  internal_transport_handlers_admins_set.Response:
+    properties:
+      error:
+        type: string
+      status:
+        type: string
+    type: object
+  internal_transport_handlers_url_save.Request:
+    properties:
+      alias:
+        type: string
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  internal_transport_handlers_url_save.Response:
+    properties:
+      alias:
+        type: string
+      error:
+        type: string
+      status:
+        type: string
+    type: object
+  response.Response:
+    properties:
+      error:
+        type: string
+      status:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /{alias}:
+    get:
+      description: Перенаправляет на оригинальный URL по alias. Счётчик кликов инкрементируется
+        асинхронно.
+      parameters:
+      - description: Короткий alias
+        in: path
+        name: alias
+        required: true
+        type: string
+      responses:
+        "302":
+          description: ""
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Редирект по короткой ссылке
+      tags:
+      - urls
+  /health:
+    get:
+      description: Возвращает статус сервиса и статистику кеша.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Проверка здоровья сервиса
+      tags:
+      - system
+  /url:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт короткий alias для переданного URL. Если alias не указан,
+        генерируется случайный.
+      parameters:
+      - description: URL для сокращения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_transport_handlers_url_save.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_transport_handlers_url_save.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Создать короткую ссылку
+      tags:
+      - urls
+  /url/{alias}:
+    delete:
+      description: Удаляет alias из базы. Требует права администратора.
+      parameters:
+      - description: Короткий alias
+        in: path
+        name: alias
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Удалить короткую ссылку
+      tags:
+      - urls
+  /user:
+    delete:
+      consumes:
+      - application/json
+      description: Отзывает права администратора у пользователя по email. Токен SSO
+        передаётся в заголовке Authorization.
+      parameters:
+      - description: Bearer JWT-токен от SSO
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Email пользователя и ID приложения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delete.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/delete.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Отозвать права администратора
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Выдаёт права администратора пользователю по email. Токен SSO передаётся
+        в заголовке Authorization.
+      parameters:
+      - description: Bearer JWT-токен от SSO
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Email пользователя и ID приложения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_transport_handlers_admins_set.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_transport_handlers_admins_set.Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Назначить администратора
+      tags:
+      - admin
+swagger: "2.0"

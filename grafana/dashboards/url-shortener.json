@@ -1,0 +1,113 @@
+{
+  "title": "URL Shortener",
+  "uid": "url_shortener",
+  "panels": [
+    {
+      "title": "Redirect Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(url_shortener_redirect_requests_total[1m]))",
+          "legendFormat": "QPS"
+        },
+        {
+          "expr": "sum(rate(url_shortener_redirect_requests_total{status=\"success\"}[1m]))",
+          "legendFormat": "success"
+        },
+        {
+          "expr": "sum(rate(url_shortener_redirect_requests_total{status!=\"success\"}[1m]))",
+          "legendFormat": "errors"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "title": "Latency (p50/p90/p99)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(url_shortener_redirect_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum(rate(url_shortener_redirect_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p90"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(url_shortener_redirect_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "title": "Cache Hit Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(url_shortener_cache_hits_total[1m])",
+          "legendFormat": "hits/s"
+        },
+        {
+          "expr": "rate(url_shortener_cache_misses_total[1m])",
+          "legendFormat": "misses/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "title": "Errors by Status",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(url_shortener_redirect_requests_total{status!=\"success\"}[1m])) by (status)",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "title": "Top Aliases by Clicks",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 10 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "postgres_clicks" },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "postgres_clicks" },
+          "format": "table",
+          "rawSql": "SELECT alias, url, clicks FROM urls ORDER BY clicks DESC LIMIT 20;",
+          "rawQuery": true,
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "clicks" },
+            "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }]
+          }
+        ]
+      }
+    }
+  ]
+}

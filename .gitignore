@@ -1,3 +1,25 @@
-/storage/storage.db
+# Binaries
+/url-shortener
+
+# Environment files
 *.env
+
+# IDE
+.idea/
+
+# Profiling artifacts
+*.pprof
+
+# Test coverage
+coverage.out
+
+# Load test results (JSON reports in project root)
+no-cache.json
+with-cache.json
+results.json
+round*.json
+
+# Misc
+/storage/storage.db
 struct_project.txt
+package.json
