@@ -1,7 +1,7 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/neepooha/url_shortener/raw/main/assets/images/logo-white.png">
-    <img alt="logo" src="https://github.com/neepooha/url_shortener/raw/main/assets/images/logo-black.png" width="40%">
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/DimaOshchepkov/url_shortener/raw/main/assets/images/logo-white.png">
+    <img alt="logo" src="https://github.com/DimaOshchepkov/url_shortener/raw/main/assets/images/logo-black.png" width="40%">
   </picture>
 </div>
 
@@ -11,9 +11,9 @@
   
 ![License](https://img.shields.io/badge/License-MIT-red)
 ![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/neepooha/url_shortener)](https://goreportcard.com/report/github.com/neepooha/url_shortener)
-[![Go Reference](https://pkg.go.dev/badge/github.com/neepooha/url_shortener.svg)](https://pkg.go.dev/github.com/neepooha/url_shortener)
-[![Build Status](https://github.com/neepooha/url_shortener/actions/workflows/deploy.yml/badge.svg)](https://github.com/neepooha/url_shortener/actions/workflows/deploy.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/DimaOshchepkov/url_shortener)](https://goreportcard.com/report/github.com/DimaOshchepkov/url_shortener)
+[![Go Reference](https://pkg.go.dev/badge/github.com/DimaOshchepkov/url_shortener.svg)](https://pkg.go.dev/github.com/DimaOshchepkov/url_shortener)
+[![Build Status](https://github.com/DimaOshchepkov/url_shortener/actions/workflows/deploy.yml/badge.svg)](https://github.com/DimaOshchepkov/url_shortener/actions/workflows/deploy.yml)
 <br>
 </div>
 
@@ -90,7 +90,7 @@ It encourages writing clean and idiomatic Go code.
   scheme of user interaction, SSO and URL-shortener
   <br>
   <picture>
-    <img alt="scheme" src="https://github.com/neepooha/url_shortener/raw/main/assets/images/scheme.png" width="60%">
+    <img alt="scheme" src="https://github.com/DimaOshchepkov/url_shortener/raw/main/assets/images/scheme.png" width="60%">
   </picture>
 </div>
 
@@ -114,7 +114,7 @@ After installing Go, Docker and TaskFile, run the following commands to start ex
 ```shell
 ## RUN URL-SHORTENER
 # download the project
-git clone https://github.com/neepooha/url_shortener.git
+git clone https://github.com/DimaOshchepkov/url_shortener.git
 cd url_shortener
 
 # create config.env with that text:
